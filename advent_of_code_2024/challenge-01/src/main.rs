@@ -1,9 +1,9 @@
-
+    
 use std::fs::File;
 use std::io::{self, BufRead};
 use std::path::Path;
 
-// A struct to hold and process two lists of integers for comparison and scoring
+/// A struct to hold and process two lists of integers for comparison and scoring
 struct IntegerPairProcessor {
     list_a: Vec<i32>, // Represents the first list of integers
     list_b: Vec<i32>, // Represents the second list of integers
@@ -11,14 +11,14 @@ struct IntegerPairProcessor {
 }
 
 impl IntegerPairProcessor {
-    // Sorts both lists in ascending order for ordered comparisons
+    /// Sorts both lists in ascending order for ordered comparisons
     fn sort_lists(&mut self) {
         self.list_a.sort_unstable();
         self.list_b.sort_unstable();
     }
 
-    // Calculates the total sum of absolute differences between corresponding elements in both lists
-    // Assumes both lists are sorted and of the same length.
+    /// Calculates the total sum of absolute differences between corresponding elements in both lists
+    /// Assumes both lists are sorted and of the same length.
     fn total_absolute_difference(&self) -> i32 {
         self.list_a.iter()
         .zip(self.list_b.iter()) // Pair up elements from both lists
