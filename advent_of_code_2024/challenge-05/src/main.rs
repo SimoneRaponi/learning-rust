@@ -2,6 +2,7 @@ use std::collections::{HashMap, HashSet};
 use std::fs::File;
 use std::io::{self, BufRead};
 use std::path::Path;
+use std::collections::VecDeque;
 
 fn main() -> io::Result<()> {
     // Open the input file
@@ -47,20 +48,69 @@ fn main() -> io::Result<()> {
 
     // Variable to store the total of the middle values of valid sequences
     let mut total: i32 = 0;
+    let mut incorrect_total: i32 = 0;
+
 
     // Validate each sequence
     for sequence in arrays.iter() {
         if validate_sequence(sequence, &goes_after) {
-            // If valid, add the middle element of the sequence to the total
             let middle_value = sequence.get(sequence.len() / 2).copied().unwrap_or(0);
             total += middle_value;
+        } else {
+            let fixed_sequence = fix_sequence(sequence, &goes_after);
+            let middle_value = fixed_sequence.get(fixed_sequence.len() / 2).copied().unwrap_or(0);
+            incorrect_total += middle_value;
         }
     }
 
-    // Output the final total
-    print!("Total: {}", total);
+    println!("Total of middle values for valid sequences: {}", total);
+    println!("Total of middle values for corrected sequences: {}", incorrect_total);
 
     Ok(())
+}
+
+// Function to fix an incorrect sequence using topological sort
+fn fix_sequence(sequence: &Vec<i32>, goes_after: &HashMap<i32, HashSet<i32>>) -> Vec<i32> {
+    let mut indegree: HashMap<i32, usize> = HashMap::new();
+    let mut graph: HashMap<i32, Vec<i32>> = HashMap::new();
+
+    // Build graph and compute indegree
+    for &page in sequence.iter() {
+        indegree.entry(page).or_insert(0);
+        if let Some(dependencies) = goes_after.get(&page) {
+            for &dep in dependencies.iter() {
+                if sequence.contains(&dep) {
+                    graph.entry(dep).or_default().push(page);
+                    *indegree.entry(page).or_insert(0) += 1;
+                }
+            }
+        }
+    }
+
+    // Topological sort using a queue
+    let mut queue: VecDeque<i32> = indegree
+        .iter()
+        .filter(|&(_, &deg)| deg == 0)
+        .map(|(&page, _)| page)
+        .collect();
+
+    let mut sorted: Vec<i32> = Vec::new();
+
+    while let Some(page) = queue.pop_front() {
+        sorted.push(page);
+        if let Some(neighbors) = graph.get(&page) {
+            for &neighbor in neighbors {
+                if let Some(deg) = indegree.get_mut(&neighbor) {
+                    *deg -= 1;
+                    if *deg == 0 {
+                        queue.push_back(neighbor);
+                    }
+                }
+            }
+        }
+    }
+
+    sorted
 }
 
 // Function to validate a sequence based on dependency rules
