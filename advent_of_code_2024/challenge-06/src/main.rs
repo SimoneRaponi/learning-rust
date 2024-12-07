@@ -12,7 +12,7 @@ enum Direction {
 }
 
 impl Direction {
-    /// Rotates the guard's direction 90 degrees to the right (clockwise).
+    /// Rotates the guard's direction 90 degrees to the right (clockwise)
     fn turn_right(&self) -> Direction {
         match self {
             Direction::Up => Direction::Right,
@@ -23,7 +23,7 @@ impl Direction {
     }
 }
 
-/// Represents the guard's current state: position and direction.
+/// Represents the guard's current state: position and direction
 struct Guard {
     x: isize,             // Current x-coordinate of the guard
     y: isize,             // Current y-coordinate of the guard
@@ -40,10 +40,10 @@ impl Guard {
         }
     }
 
-    /// Determines the next direction for the guard based on the environment.
+    /// Determines the next direction for the guard based on the environment
     ///
     /// The guard checks the position in front of it:
-    /// - If there is an obstacle or the position is out of bounds, the guard will turn right.
+    /// - If there is an obstacle or the position is out of bounds, the guard will turn right;
     /// - Otherwise, the guard continues forward in the same direction.
     fn next_direction(&self, grid: &Vec<Vec<char>>) -> Direction {
         // Calculate the movement offset based on the current direction
@@ -57,9 +57,8 @@ impl Guard {
         let next_x = self.x + dx;
         let next_y = self.y + dy;
 
-        // Check boundaries before indexing
+        // Check boundaries before indexing, if any of the next coordinates are negative it is out of bounds
         if next_x < 0 || next_y < 0 {
-            // If next position is negative, it's out of bounds
             return self.direction;
         }
 
@@ -68,7 +67,6 @@ impl Guard {
 
         // Check if out of bounds in the positive direction
         if ny >= grid.len() || nx >= grid[0].len() {
-            // Out of bounds
             return self.direction;
         }
 
@@ -106,7 +104,7 @@ fn simulate_patrol(grid: &Vec<Vec<char>>, start_x: usize, start_y: usize) -> (us
     // Keep track of visited positions to count distinct visits
     let mut visited_positions = HashSet::new();
 
-    // Each state: (x, y, direction). Used to detect loops.
+    // Each state: (x, y, direction), needed to detect loops
     let mut states = HashSet::new();
 
     // Record the initial state and position
@@ -142,7 +140,7 @@ fn simulate_patrol(grid: &Vec<Vec<char>>, start_x: usize, start_y: usize) -> (us
     }
 }
 
-/// Reads the grid from the specified file and returns it as a vector of vectors of characters.
+/// Reads the grid from the specified file and returns it as a vector of vectors of characters
 fn read_grid_from_file(filename: &str) -> io::Result<Vec<Vec<char>>> {
     let file = File::open(filename)?;
     let reader = io::BufReader::new(file);
@@ -158,11 +156,7 @@ fn read_grid_from_file(filename: &str) -> io::Result<Vec<Vec<char>>> {
     Ok(grid)
 }
 
-/// Part 2 logic:
-///
-/// Tries placing a single new obstruction in different positions and checks if it causes the guard to get stuck in a loop.
-///
-/// Now includes a simple progress bar that updates during the process.
+/// Function to place a single new obstruction in different positions and checks if it causes the guard to get stuck in a loop.
 fn count_obstructions_that_cause_loop(grid: &Vec<Vec<char>>, x_guard: usize, y_guard: usize) -> usize {
     let mut loop_count = 0;
     let mut grid_modified = grid.clone();
