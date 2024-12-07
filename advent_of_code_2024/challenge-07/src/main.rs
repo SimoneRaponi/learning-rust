@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::fs::File;
 use std::path::Path;
 use std::io::{self, BufRead};
@@ -6,7 +7,7 @@ use itertools::Itertools;
 
 // Generate all possible sequences of operators
 fn generate_operator_sequences(length: usize) -> Vec<Vec<char>> {
-    let operators = vec!['+', '*'];
+    let operators = vec!['+', '*',];
     if length == 0 {
         return vec![];
     }
@@ -33,16 +34,27 @@ where P: AsRef<Path>, {
 fn calculate_matching_expressions(rows: Vec<Vec<i64>>) -> i64 {
 
     let mut valid_expressions_total: i64 = 0;
+    let mut hash_map:HashMap<usize, Vec<Vec<char>>> = HashMap::new();
 
     for row in rows.iter() {
         
-        // The first value is the target total
+        // The first value in the sequence represents the target total
         let target_total = row[0];
-        // Remaining values are the numbers to operate on
+        // The remaining values are the numbers to operate on
         let numbers = &row[1..];
+        // Store the number of operators to produce
+        let operators_length = numbers.len()-1;
 
-        // Generate all possible operator sequences ((len(n)-1)-long)
-        let operator_sequences = generate_operator_sequences(numbers.len()-1);
+        let mut operator_sequences: Vec<Vec<char>> = Vec::new();
+
+        // Get the sequence of operators if already present in the hashMap
+        if hash_map.contains_key(&operators_length) {
+            operator_sequences = hash_map.get(&operators_length).unwrap().to_vec();
+        } else {
+            // Generate all possible operator sequences ((len(n)-1)-long)
+            operator_sequences = generate_operator_sequences(operators_length);
+            hash_map.insert(operators_length, operator_sequences.clone());
+        }
 
         println!("{:?}", operator_sequences);
 
