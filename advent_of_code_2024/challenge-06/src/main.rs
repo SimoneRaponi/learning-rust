@@ -225,11 +225,11 @@ fn main() -> io::Result<()> {
         }
     }
 
-    // Part 1: Simulate the guard's initial patrol without modifications
+    // Simulate the guard's initial patrol without modifications
     let (visited_count, _, _) = simulate_patrol(&grid, x_guard, y_guard);
     println!("Total visited positions without modification: {}", visited_count);
 
-    // Part 2: Count how many positions can cause the guard to loop if obstructed
+    // Count how many positions can cause the guard to loop if obstructed
     let loop_count = count_obstructions_that_cause_loop(&grid, x_guard, y_guard);
     println!("Number of positions that cause guard to get stuck in a loop: {}", loop_count);
 
