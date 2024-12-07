@@ -7,7 +7,7 @@ use itertools::Itertools;
 
 // Generate all possible sequences of operators
 fn generate_operator_sequences(length: usize) -> Vec<Vec<char>> {
-    let operators = vec!['+', '*',];
+    let operators = vec!['+', '*', '|'];
     if length == 0 {
         return vec![];
     }
@@ -45,7 +45,7 @@ fn calculate_matching_expressions(rows: Vec<Vec<i64>>) -> i64 {
         // Store the number of operators to produce
         let operators_length = numbers.len()-1;
 
-        let mut operator_sequences: Vec<Vec<char>> = Vec::new();
+        let operator_sequences: Vec<Vec<char>>;
 
         // Get the sequence of operators if already present in the hashMap
         if hash_map.contains_key(&operators_length) {
@@ -55,8 +55,6 @@ fn calculate_matching_expressions(rows: Vec<Vec<i64>>) -> i64 {
             operator_sequences = generate_operator_sequences(operators_length);
             hash_map.insert(operators_length, operator_sequences.clone());
         }
-
-        println!("{:?}", operator_sequences);
 
         for operators in operator_sequences.iter() {
             let (is_match, matching_value) = evaluate_expression(target_total, numbers,  operators);
@@ -71,6 +69,10 @@ fn calculate_matching_expressions(rows: Vec<Vec<i64>>) -> i64 {
     valid_expressions_total
 }
 
+fn concat_integers(a: i64, b: i64) -> u64 {
+    a as u64 * 10u64.pow(b.ilog10() + 1) + b as u64
+}
+
 // Evaluate the expression formed by the combination of numbers and operators.
 // Returns a tuple: (whether the result matches the target total, value if it matches)
 fn evaluate_expression(target_total: i64, numbers: &[i64], operators: &[char]) -> (bool, i64) {
@@ -79,6 +81,7 @@ fn evaluate_expression(target_total: i64, numbers: &[i64], operators: &[char]) -
         match op {
             '+' => result += num,
             '*' => result *= num,
+            '|' => result = concat_integers(result, num) as i64,
             _ => panic!("Unsupported operator"),
         }
     }
@@ -94,7 +97,7 @@ fn main() {
     let mut parsed_rows: Vec<Vec<i64>> = Vec::new();
 
     // Read and parse the input file
-    if let Ok(lines) = read_lines("./test.txt") {
+    if let Ok(lines) = read_lines("./puzzle_input.txt") {
         for line in lines.flatten() {
             let parts: Vec<&str> = line.split(':').collect();
             let target_total = parts[0].trim().parse::<i64>().unwrap();
