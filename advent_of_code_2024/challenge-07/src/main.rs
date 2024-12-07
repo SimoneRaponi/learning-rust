@@ -1,34 +1,19 @@
 use std::fs::File;
 use std::path::Path;
 use std::io::{self, BufRead};
+use itertools::Itertools;
+
 
 // Generate all possible sequences of operators
-fn generate_operator_sequences(n: usize) -> Vec<Vec<char>> {
-    let mut sequences = Vec::new();
-    let mut current_sequence = Vec::with_capacity(n);
-    generate_sequences_recursive(n, &mut current_sequence, &mut sequences);
-    sequences
-}
-
-// Recursive function to generate operator sequences
-fn generate_sequences_recursive(n: usize, current: &mut Vec<char>, results: &mut Vec<Vec<char>>) {
-    if current.len() == n {
-        // Base case: store the current sequence and return
-        results.push(current.clone());
-        return;
+fn generate_operator_sequences(length: usize) -> Vec<Vec<char>> {
+    let operators = vec!['+', '*'];
+    if length == 0 {
+        return vec![];
     }
-
-    // Add '+' operator and recurse
-    current.push('+');
-    generate_sequences_recursive(n, current, results);
-    // Undo the choice
-    current.pop();
-
-    // Add '-' operator and recurse
-    current.push('*');
-    generate_sequences_recursive(n, current, results);
-    // Undo the choice
-    current.pop();
+    (0..length)
+        .map(|_| operators.clone())
+        .multi_cartesian_product()
+        .collect()
 }
 
 /// Reads lines from a file and returns an iterator over them.
@@ -58,6 +43,8 @@ fn calculate_matching_expressions(rows: Vec<Vec<i64>>) -> i64 {
 
         // Generate all possible operator sequences ((len(n)-1)-long)
         let operator_sequences = generate_operator_sequences(numbers.len()-1);
+
+        println!("{:?}", operator_sequences);
 
         for operators in operator_sequences.iter() {
             let (is_match, matching_value) = evaluate_expression(target_total, numbers,  operators);
@@ -95,7 +82,7 @@ fn main() {
     let mut parsed_rows: Vec<Vec<i64>> = Vec::new();
 
     // Read and parse the input file
-    if let Ok(lines) = read_lines("./puzzle_input.txt") {
+    if let Ok(lines) = read_lines("./test.txt") {
         for line in lines.flatten() {
             let parts: Vec<&str> = line.split(':').collect();
             let target_total = parts[0].trim().parse::<i64>().unwrap();
