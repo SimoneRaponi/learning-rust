@@ -5,16 +5,40 @@ use std::fs;
 /// It is used to represent the coordinates of antennas and antinodes
 type Position = (isize, isize);
 
-/// Subtracts two positions
 /// Returns a new position representing the vector difference of the input positions.
 fn subtract_positions(a: Position, b: Position) -> Position {
     (a.0 - b.0, a.1 - b.1)
 }
 
-/// Add two positions
 /// Returns a new position by adding the coordinates of the two input positions.
 fn add_positions(a: Position, b: Position) -> Position {
     (a.0 + b.0, a.1 + b.1)
+}
+
+/// Rotates a direction by 180 degrees (inverts the vector)
+fn rotate180(direction: Position) -> Position {
+    (-direction.0, -direction.1)
+}
+
+/// Calculates the greatest common divisor (GCD) of two integers using the Euclidean algorithm
+fn gcd(a: isize, b: isize) -> isize {
+    if b == 0 {
+        a.abs() // Return the absolute value for clarity
+    } else {
+        gcd(b, a % b)
+    }
+}
+
+/// Iteratively follows a direction from a starting position until no further valid positions exist in the map
+/// Returns a vector of all valid positions encountered along the path
+fn iter(position: Position, direction: Position, map: &HashMap<Position, char>) -> Vec<Position> {
+    let mut result = Vec::new();
+    let mut current = position;
+    while map.contains_key(&current) {
+        result.push(current); // Add the current position to the result
+        current = add_positions(current, direction); // Move in the specified direction.
+    }
+    result
 }
 
 /// Parses the input grid into a HashMap of positions and their corresponding frequencies
@@ -63,6 +87,22 @@ fn find_antinodes_part1(
     .into_iter()
     .filter(|pos| grid.contains_key(pos)) // Keep only positions that exist in the grid
     .collect()
+}
+
+/// Finds antinodes for Part 2.
+/// Logic: Extends a line in both directions from one antenna to another, capturing all valid antinodes along the way.
+fn find_antinodes_part2(
+    map: &HashMap<Position, char>,
+    antenna_a: Position,
+    antenna_b: Position,
+) -> Vec<Position> {
+    let (delta_row, delta_col) = subtract_positions(antenna_a, antenna_b);
+    let gcd_val = gcd(delta_row, delta_col); // Normalize the direction vector.
+    let direction = (delta_row / gcd_val, delta_col / gcd_val);
+    let mut antinodes = Vec::new();
+    antinodes.extend(iter(antenna_a, direction, map)); // Extend in the normalized direction.
+    antinodes.extend(iter(antenna_a, rotate180(direction), map)); // Extend in the opposite direction.
+    antinodes
 }
 
 /// Solves the problem using the given antinode finding function
@@ -123,4 +163,9 @@ fn main() {
     let unique_locations = solve(&input, find_antinodes_part1);
 
     println!("Unique Locations: {}", unique_locations);
+
+    // Solve the problem for Part2 using the specific antinode calculation function
+    let unique_locations_part_2 = solve(&input, find_antinodes_part2);
+
+    println!("Unique Locations Part 2: {}", unique_locations_part_2);
 }
