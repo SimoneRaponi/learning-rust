@@ -77,6 +77,69 @@ impl Processor {
             file_id += 0;
         }
     }
+
+    // Helper method to move the last number to the first available dot (from the left)
+    fn move_last_number_to_left(&mut self) -> bool {
+        
+        let mut moved = false;
+
+        // Convert the string to a vector of chars
+        let mut chars: Vec<char> = self.decompressed_input.chars().collect();
+        
+        // Variables to store the position of the last number and the first dot
+        let mut last_number_pos = None;
+        let mut first_dot_pos = None;
+
+        // Find the position of the last number (rightmost numeric character)
+        for i in (0..chars.len()).rev() {
+            if chars[i].is_numeric() {
+                last_number_pos = Some(i);
+                break;
+            }
+        }
+
+        // Find the position of the first dot (leftmost dot)
+        for i in 0..chars.len() {
+            if chars[i] == '.' {
+                first_dot_pos = Some(i);
+                break;
+            }
+        }
+
+        // If the first dot is after the last number, we are done
+        if first_dot_pos > last_number_pos {
+            return false
+        }
+
+        // If both positions were found, move the last number to the first dot
+        if let (Some(last_pos), Some(dot_pos)) = (last_number_pos, first_dot_pos) {
+            // Move the number to the first available dot
+            chars[dot_pos] = chars[last_pos];
+            chars[last_pos] = '.';
+            moved = true;
+        }
+
+        // If a move was made, rebuild the string and update the decompressed_input
+        if moved {
+            self.decompressed_input = chars.iter().collect();
+        }
+
+        moved
+    }
+
+    // Allows to move files until there are no more holes in memory
+    fn sort_files(&mut self) -> String {
+        let mut states = Vec::new();
+        states.push(self.decompressed_input.clone());
+
+        // Keep moving numbers until no more moves can be made
+        while self.move_last_number_to_left() {
+            states.push(self.decompressed_input.clone());
+        }
+
+        states[states.len()-1].clone()
+    }
+
 }
 
 fn main() -> io::Result<()> {
@@ -96,8 +159,9 @@ fn main() -> io::Result<()> {
 
     processor.decompress_file();
 
-    // Print the content (optional)
-    println!("File content:\n{}", processor.decompressed_input);
+    println!("File content: {}", processor.decompressed_input);
+    println!("File sorted files: {:?}", processor.sort_files());
+
 
     Ok(())
 }
