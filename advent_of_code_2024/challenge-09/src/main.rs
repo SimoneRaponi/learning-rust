@@ -4,6 +4,7 @@ use std::io::{self, Read};
 struct Processor {
     row_input: String,
     decompressed_input: String,
+    sorted_files: String,
 }
 
 impl Processor {
@@ -128,7 +129,7 @@ impl Processor {
     }
 
     // Allows to move files until there are no more holes in memory
-    fn sort_files(&mut self) -> String {
+    fn sort_files(&mut self) {
         let mut states = Vec::new();
         states.push(self.decompressed_input.clone());
 
@@ -137,7 +138,20 @@ impl Processor {
             states.push(self.decompressed_input.clone());
         }
 
-        states[states.len()-1].clone()
+        self.sorted_files = states[states.len()-1].clone()
+    }
+
+    // Calculate checksum of the sorted files
+    fn calculate_checksum(&self) -> u32 {
+        let mut total: u32 = 0;
+
+        for (index, c) in self.sorted_files.chars().enumerate() {
+            if let Some(digit) = c.to_digit(10) {
+                total += index as u32 * digit;
+            }
+        }
+
+        total
     }
 
 }
@@ -148,7 +162,8 @@ fn main() -> io::Result<()> {
 
     let mut processor = Processor{
         row_input: String::new(),
-        decompressed_input: String::new()
+        decompressed_input: String::new(),
+        sorted_files: String::new(),
     };
 
     // Open the file
@@ -158,9 +173,9 @@ fn main() -> io::Result<()> {
     file.read_to_string(&mut processor.row_input)?;
 
     processor.decompress_file();
+    processor.sort_files();
 
-    println!("File content: {}", processor.decompressed_input);
-    println!("File sorted files: {:?}", processor.sort_files());
+    println!("Checksum: {:?}", processor.calculate_checksum());
 
 
     Ok(())
