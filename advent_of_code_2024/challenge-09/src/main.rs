@@ -39,7 +39,7 @@ impl Processor {
         (file_lengths, space_lengths) 
     }
 
-    // Decompresses the file based on file_lengths and space_lengths
+    /// Decompresses the file based on file_lengths and space_lengths
     fn decompress_file(&mut self) {        
         // Variable to keep track of unique file IDs
         let mut file_id = 0;
@@ -79,7 +79,7 @@ impl Processor {
         }
     }
 
-    // Helper method to move the last number to the first available dot (from the left)
+    /// Helper method to move the last number to the first available dot (from the left)
     fn move_last_number_to_left(&mut self) -> bool {
         
         let mut moved = false;
@@ -114,7 +114,7 @@ impl Processor {
 
         // If both positions were found, move the last number to the first dot
         if let (Some(last_pos), Some(dot_pos)) = (last_number_pos, first_dot_pos) {
-            // Move the number to the first available dot
+            // Move the number to the first available slot
             chars[dot_pos] = chars[last_pos];
             chars[last_pos] = '.';
             moved = true;
@@ -128,7 +128,7 @@ impl Processor {
         moved
     }
 
-    // Allows to move files until there are no more holes in memory
+    /// Allows to move files until there are no more holes in memory
     fn sort_files(&mut self) {
         let mut states = Vec::new();
         states.push(self.decompressed_input.clone());
@@ -141,16 +141,16 @@ impl Processor {
         self.sorted_files = states[states.len()-1].clone()
     }
 
-    // Calculate checksum of the sorted files
-    fn calculate_checksum(&self) -> u32 {
-        let mut total: u32 = 0;
-
+    /// Calculate checksum of the sorted files
+    fn calculate_checksum(&self) -> u64 {
+        let mut total: u64 = 0;
+    
         for (index, c) in self.sorted_files.chars().enumerate() {
             if let Some(digit) = c.to_digit(10) {
-                total += index as u32 * digit;
+                total += index as u64 * digit as u64;
             }
         }
-
+    
         total
     }
 
@@ -158,7 +158,7 @@ impl Processor {
 
 fn main() -> io::Result<()> {
 
-    let file_path = "test.txt";
+    let file_path = "puzzle_input.txt";
 
     let mut processor = Processor{
         row_input: String::new(),
