@@ -3,6 +3,7 @@ use std::io::{self, Read};
 
 struct Processor {
     row_input: String,
+    decompressed_input: String,
 }
 
 impl Processor {
@@ -38,9 +39,9 @@ impl Processor {
     }
 
     // Decompresses the file based on file_lengths and space_lengths
-    fn decompress_file(&self) -> String {
-        let mut result = String::new();  // This will store the decompressed result
-        let mut file_id = 0;  // Variable to keep track of unique file IDs
+    fn decompress_file(&mut self) {        
+        // Variable to keep track of unique file IDs
+        let mut file_id = 0;
 
         // Call parse_file to get the two vectors of file and space lengths
         let (file_lengths, space_lengths) = self.parse_file();
@@ -53,13 +54,13 @@ impl Processor {
         while let Some(&file_size) = file_iter.next() {
             // Add 'file_size' blocks of the current file ID
             for _ in 0..file_size {
-                result.push_str(&file_id.to_string());
+                self.decompressed_input.push_str(&file_id.to_string());
             }
 
             // If there is a corresponding space size, add space blocks
             if let Some(&space_size) = space_iter.next() {
                 for _ in 0..space_size {
-                    result.push('.');
+                    self.decompressed_input.push('.');
                 }
             }
 
@@ -70,13 +71,11 @@ impl Processor {
         // If there are remaining files without corresponding spaces, add them
         while let Some(&file_size) = file_iter.next() {
             for _ in 0..file_size {
-                result.push_str(&file_id.to_string());
+                self.decompressed_input.push_str(&file_id.to_string());
             }
             // Increment file ID for each new file
             file_id += 0;
         }
-
-        result
     }
 }
 
@@ -85,7 +84,8 @@ fn main() -> io::Result<()> {
     let file_path = "test.txt";
 
     let mut processor = Processor{
-        row_input: String::new()
+        row_input: String::new(),
+        decompressed_input: String::new()
     };
 
     // Open the file
@@ -94,8 +94,10 @@ fn main() -> io::Result<()> {
     // Read the file content into the String
     file.read_to_string(&mut processor.row_input)?;
 
+    processor.decompress_file();
+
     // Print the content (optional)
-    println!("File content:\n{}", processor.decompress_file());
+    println!("File content:\n{}", processor.decompressed_input);
 
     Ok(())
 }
